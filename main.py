@@ -2,6 +2,7 @@
 import asyncio  # Нужен для запуска асинхронной функции через asyncio.run(...).
 from aiogram import Bot, Dispatcher  # Bot = связь с Telegram API, Dispatcher = обработка входящих сообщений.
 from handlers import router 
+from db import create_db
 
 TOKEN = get_bot_token()  # Считываем токен один раз при запуске программы.
 
@@ -13,7 +14,8 @@ async def main():  # Главная асинхронная функция, в к
     bot = Bot(token=TOKEN)  # Создаем объект бота для общения с Telegram.
     dp = Dispatcher()  # Создаем диспетчер, который распределяет входящие апдейты по хендлерам.
     dp.include_router(router)
-    
+    await create_db()
+
     await dp.start_polling(bot)  # Запускаем polling: бот постоянно получает новые сообщения.
 
 
