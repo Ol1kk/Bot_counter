@@ -14,7 +14,9 @@ from aiogram.fsm.state import State
 from aiogram.fsm.context import FSMContext
 # Импортируем нашу группу состояний Income из отдельного файла states.py.
 from states import Income
-
+from db import saving_income
+from db import getting_user_salary
+from calculations import calc_salary
 
 # Создаем роутер, к которому привязываются все хэндлеры в этом файле.
 router = Router()
@@ -51,8 +53,11 @@ async def handler_income_message(msg, state):  # Асинхронный хэнд
         user_text = msg.text.strip()
         # Преобразуем строку в число: заменяем запятую на точку и приводим к float.
         number = float(user_text.replace(",", "."))
+        id_from_user = msg.from_user.id
+
 
         # Отправляем подтверждение, что доход принят, и показываем распознанное число.
+        await saving_income(id_from_user, number)
         await msg.answer(f"Принято. Доход: {number}")
         # Сбрасываем состояние пользователя, завершая шаг ввода дохода.
         await state.clear()
@@ -61,3 +66,14 @@ async def handler_income_message(msg, state):  # Асинхронный хэнд
     except ValueError:
         # Просим пользователя ввести корректное числовое значение.
         await msg.answer("Пожалуйста, введите число")
+
+
+@router.message(Command("daily_salary"))
+async def daily_salary_message(msg):
+    get_id_from_user = msg.from_user.id
+    salary = await getting_user_salary(get_id_from_user)
+    if salary is None:
+        await msg.answer("Сначала нужно задать зарплату командой /set_income")
+    else:
+        daily_salary = calc_salary(salary)
+        await msg.answer(f"Доход на сегодня: {daily_salary}")

@@ -35,3 +35,19 @@ async def saving_income(user_id, income):
             (user_id, income),
         )
         await db.commit()
+
+
+async def getting_user_salary(user_id):
+    async with aiosqlite.connect(DB_USERS_INCOME) as db:
+        cursor = await db.execute(
+                """
+                SELECT income FROM DB_USERS_INCOME 
+                WHERE user_id = ?
+                """,
+                (user_id,)
+            )
+        row = await cursor.fetchone()
+        if row is None:
+            return None
+        else:
+            return row[0]
