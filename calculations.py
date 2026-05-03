@@ -19,3 +19,15 @@ def calc_salary(income):
     todays_salary = income/days_num
     # Возвращаем рассчитанный дневной доход туда, где вызвали функцию.
     return todays_salary
+
+def calc_day_salary(income, date):
+    calc_date = date
+    month = calc_date.month
+    year = calc_date.year
+    days_num = calendar.monthrange(year, month)
+    # Берем второй элемент результата: количество дней в выбранном месяце.
+    days_num = days_num[1]
+    # Делим месячный доход на количество дней и получаем доход за один день.
+    choose_day_salary = income/days_num
+    # Возвращаем рассчитанный дневной доход туда, где вызвали функцию.
+    return choose_day_salary

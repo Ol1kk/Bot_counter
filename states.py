@@ -3,3 +3,4 @@ from aiogram.fsm.state import State
 
 class Income(StatesGroup):
     waiting_for_income = State()
+    waiting_for_date = State()
