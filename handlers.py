@@ -14,8 +14,11 @@ from aiogram.fsm.state import State
 from aiogram.fsm.context import FSMContext
 # Импортируем нашу группу состояний Income из отдельного файла states.py.
 from states import Income
+# Импортируем функцию сохранения дохода пользователя в базу.
 from db import saving_income
+# Импортируем функцию получения сохраненного дохода пользователя из базы.
 from db import getting_user_salary
+# Импортируем функцию расчета дневного дохода.
 from calculations import calc_salary
 
 # Создаем роутер, к которому привязываются все хэндлеры в этом файле.
@@ -53,11 +56,13 @@ async def handler_income_message(msg, state):  # Асинхронный хэнд
         user_text = msg.text.strip()
         # Преобразуем строку в число: заменяем запятую на точку и приводим к float.
         number = float(user_text.replace(",", "."))
+        # Получаем Telegram ID пользователя, чтобы сохранить доход именно для него.
         id_from_user = msg.from_user.id
 
 
-        # Отправляем подтверждение, что доход принят, и показываем распознанное число.
+        # Сохраняем доход пользователя в базу данных.
         await saving_income(id_from_user, number)
+        # Отправляем подтверждение, что доход принят, и показываем распознанное число.
         await msg.answer(f"Принято. Доход: {number}")
         # Сбрасываем состояние пользователя, завершая шаг ввода дохода.
         await state.clear()
@@ -70,10 +75,16 @@ async def handler_income_message(msg, state):  # Асинхронный хэнд
 
 @router.message(Command("daily_salary"))
 async def daily_salary_message(msg):
+    # Получаем Telegram ID пользователя, который запросил расчет дневного дохода.
     get_id_from_user = msg.from_user.id
+    # Достаем сохраненный месячный доход пользователя из базы.
     salary = await getting_user_salary(get_id_from_user)
+    # Проверяем, есть ли доход в базе: None означает, что пользователь еще не вводил сумму.
     if salary is None:
+        # Просим пользователя сначала задать месячный доход.
         await msg.answer("Сначала нужно задать зарплату командой /set_income")
     else:
+        # Считаем доход за один день на основе сохраненного месячного дохода.
         daily_salary = calc_salary(salary)
+        # Отправляем пользователю результат расчета.
         await msg.answer(f"Доход на сегодня: {daily_salary}")
